@@ -1,4 +1,6 @@
 -- Set <space> as the leader key
+vim.keymap.set('n', '<Tab>', ':bnext<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<S-Tab>', ':bprev<CR>', { noremap = true, silent = true })
 -- See `:help mapleader`
 --
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
@@ -857,7 +859,30 @@ require('lazy').setup({
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'python', 'javascript', 'typescript', 'json', 'yaml', 'toml', 'css', 'dockerfile', 'gitignore', 'sql', 'regex' },
+      ensure_installed = {
+        'bash',
+        'c',
+        'diff',
+        'html',
+        'lua',
+        'luadoc',
+        'markdown',
+        'markdown_inline',
+        'query',
+        'vim',
+        'vimdoc',
+        'python',
+        'javascript',
+        'typescript',
+        'json',
+        'yaml',
+        'toml',
+        'css',
+        'dockerfile',
+        'gitignore',
+        'sql',
+        'regex',
+      },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {

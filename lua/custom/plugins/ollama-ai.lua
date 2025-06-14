@@ -43,14 +43,14 @@ function M.generate_code()
   local cursor_pos = vim.api.nvim_win_get_cursor(0)
   local row = cursor_pos[1] - 1
 
-  local lines_before = vim.api.nvim_buf_get_lines(bufnr, math.max(0, row - 10), row, false)
-  local lines_after = vim.api.nvim_buf_get_lines(bufnr, row, math.min(vim.api.nvim_buf_line_count(bufnr), row + 10), false)
+  local lines_before = vim.api.nvim_buf_get_lines(bufnr, math.max(0, row - 15), row, false)
+  local lines_after = vim.api.nvim_buf_get_lines(bufnr, row, math.min(vim.api.nvim_buf_line_count(bufnr), row + 15), false)
 
   local context = table.concat(lines_before, '\n') .. '\n<CURSOR>\n' .. table.concat(lines_after, '\n')
   local filetype = vim.bo[bufnr].filetype
 
   local prompt = string.format(
-    "Complete the code at <CURSOR>. File type: %s\n\nContext:\n%s\n\nOutput ONLY the code to insert. No explanations, no markdown, no code blocks, no comments about what you're doing.",
+    "Complete the %s code at <CURSOR>.\n\nContext:\n%s\n\nOutput ONLY code to insert. No explanations, no markdown, no code blocks, no comments about what you're doing.",
     filetype,
     context
   )
@@ -81,4 +81,3 @@ function M.setup()
 end
 
 return M
-

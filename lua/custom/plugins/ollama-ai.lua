@@ -49,35 +49,107 @@ function M.generate_code()
   local context = table.concat(lines_before, '\n') .. '\n<CURSOR>\n' .. table.concat(lines_after, '\n')
   local filetype = vim.bo[bufnr].filetype
 
-  local prompt = string.format(
-    "Complete the %s code at <CURSOR>.\n\nContext:\n%s\n\nOutput ONLY code to insert. No explanations, no markdown, no code blocks, no comments about what you're doing.",
-    filetype,
-    context
-  )
-
-  vim.api.nvim_echo({ { 'Generating code...', 'MoreMsg' } }, false, {})
-
-  call_ollama(prompt, function(response)
-    if response then
-      local clean_response = response
-        :gsub('^%s*```[%w]*%s*', '') -- Remove opening code blocks
-        :gsub('%s*```%s*$', '') -- Remove closing code blocks
-        :gsub('^%s*', '') -- Remove leading whitespace
-        :gsub('%s*$', '') -- Remove trailing whitespace
-
-      local completion_lines = vim.split(clean_response, '\n')
-
-      vim.schedule(function()
-        vim.api.nvim_buf_set_lines(bufnr, row + 1, row + 1, false, completion_lines)
-        -- Use a less intrusive notification that doesn't require ENTER
-        vim.api.nvim_echo({ { 'Code generated', 'MoreMsg' } }, false, {})
-      end)
+  vim.ui.input({
+    prompt = 'What would you like to generate? ',
+    default = 'Complete the code'
+  }, function(user_prompt)
+    if not user_prompt or user_prompt == '' then
+      return
     end
+    
+    local prompt = string.format(
+      "%s at <CURSOR>.\n\nContext:\n%s\n\nIMPORTANT: Return ONLY the raw code to insert. No explanations, no markdown formatting, no ```code blocks```, no comments about your changes, no extra text. Just the exact code that should be inserted.",
+      user_prompt,
+      context
+    )
+
+    vim.api.nvim_echo({ { 'Generating code...', 'MoreMsg' } }, false, {})
+
+    call_ollama(prompt, function(response)
+      if response then
+        local clean_response = response
+          :gsub('^%s*```[%w]*%s*', '') -- Remove opening code blocks
+          :gsub('%s*```%s*$', '') -- Remove closing code blocks
+          :gsub('^%s*', '') -- Remove leading whitespace
+          :gsub('%s*$', '') -- Remove trailing whitespace
+
+        local completion_lines = vim.split(clean_response, '\n')
+
+        vim.schedule(function()
+          vim.api.nvim_buf_set_lines(bufnr, row + 1, row + 1, false, completion_lines)
+          vim.api.nvim_echo({ { 'Code generated', 'MoreMsg' } }, false, {})
+        end)
+      end
+    end)
+  end)
+end
+
+function M.replace_selection()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local start_pos = vim.fn.getpos("'<")
+  local end_pos = vim.fn.getpos("'>")
+  
+  local start_row = start_pos[2] - 1
+  local start_col = start_pos[3] - 1
+  local end_row = end_pos[2] - 1
+  local end_col = end_pos[3]
+  
+  local selected_lines = vim.api.nvim_buf_get_lines(bufnr, start_row, end_row + 1, false)
+  
+  if #selected_lines == 0 then
+    vim.notify('No text selected', vim.log.levels.WARN)
+    return
+  end
+  
+  if #selected_lines == 1 then
+    selected_lines[1] = string.sub(selected_lines[1], start_col + 1, end_col)
+  else
+    selected_lines[1] = string.sub(selected_lines[1], start_col + 1)
+    selected_lines[#selected_lines] = string.sub(selected_lines[#selected_lines], 1, end_col)
+  end
+  
+  local selected_text = table.concat(selected_lines, '\n')
+  local filetype = vim.bo[bufnr].filetype
+  
+  vim.ui.input({
+    prompt = 'Enter your prompt: ',
+    default = ''
+  }, function(user_prompt)
+    if not user_prompt or user_prompt == '' then
+      return
+    end
+    
+    local prompt = string.format(
+      "%s\n\nHere is the %s code to work with:\n\n%s\n\nIMPORTANT: Return the COMPLETE modified code including all original lines. Return ALL the code after making the requested changes. No explanations, no markdown formatting, no ```code blocks```, no comments about your changes, no extra text before or after. Just the exact complete code.",
+      user_prompt,
+      filetype,
+      selected_text
+    )
+    
+    vim.api.nvim_echo({ { 'Processing selection...', 'MoreMsg' } }, false, {})
+    
+    call_ollama(prompt, function(response)
+      if response then
+        local clean_response = response
+          :gsub('^%s*```[%w]*%s*', '') -- Remove opening code blocks
+          :gsub('%s*```%s*$', '') -- Remove closing code blocks
+          :gsub('^%s*', '') -- Remove leading whitespace
+          :gsub('%s*$', '') -- Remove trailing whitespace
+        
+        local replacement_lines = vim.split(clean_response, '\n')
+        
+        vim.schedule(function()
+          vim.api.nvim_buf_set_lines(bufnr, start_row, end_row + 1, false, replacement_lines)
+          vim.api.nvim_echo({ { 'Code replaced', 'MoreMsg' } }, false, {})
+        end)
+      end
+    end)
   end)
 end
 
 function M.setup()
   vim.keymap.set('n', '<leader>ag', M.generate_code, { desc = '[A]I [G]enerate code' })
+  vim.keymap.set('v', '<leader>ar', M.replace_selection, { desc = '[A]I [R]eplace selection' })
 end
 
 return M

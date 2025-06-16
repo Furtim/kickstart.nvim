@@ -966,7 +966,7 @@ require('lazy').setup({
 })
 
 -- My own additions
-vim.api.nvim_create_user_command('dt-ReplaceUnicode', function()
+vim.api.nvim_create_user_command('DTReplaceUnicode', function()
   vim.cmd [[%s/[^\x00-\x7F]/-/g]]
 end, {})
 -- Setup Ollama AI plugin

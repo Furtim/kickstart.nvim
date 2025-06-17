@@ -77,9 +77,9 @@ vim.o.cursorline = true
 vim.o.scrolloff = 10
 
 -- Set tab width to 4 spaces
-vim.o.tabstop = 4      -- Number of spaces a <Tab> in the file counts for
-vim.o.shiftwidth = 4   -- Number of spaces to use for each step of (auto)indent
-vim.o.softtabstop = 4  -- Number of spaces a <Tab> counts for while performing editing operations
+vim.o.tabstop = 4 -- Number of spaces a <Tab> in the file counts for
+vim.o.shiftwidth = 4 -- Number of spaces to use for each step of (auto)indent
+vim.o.softtabstop = 4 -- Number of spaces a <Tab> counts for while performing editing operations
 vim.o.expandtab = true -- Use spaces instead of tabs
 
 -- if performing an operation that would fail due to unsaved changes in the buffer (like `:q`),
@@ -974,6 +974,7 @@ require('lazy').setup({
 -- My own additions
 local utils = require 'custom.utils'
 vim.api.nvim_create_user_command('DTReplaceUnicode', utils.replace_unicode, {})
+vim.api.nvim_create_user_command('BBCExtract', utils.bbc_extract_episodes, {})
 
 -- Setup Ollama AI plugin
 require('custom.plugins.ollama-ai').setup()

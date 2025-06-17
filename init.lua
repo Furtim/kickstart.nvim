@@ -973,7 +973,7 @@ require('lazy').setup({
 
 -- My own additions
 local utils = require 'custom.utils'
-vim.api.nvim_create_user_command('DTReplaceUnicode', utils.replace_unicode, {})
+vim.api.nvim_create_user_command('ReplaceUnicode', utils.replace_unicode, {})
 vim.api.nvim_create_user_command('BBCExtract', utils.bbc_extract_episodes, {})
 
 -- Setup Ollama AI plugin

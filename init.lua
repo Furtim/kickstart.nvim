@@ -177,7 +177,6 @@ require('lazy').setup({
   --
   -- Use `opts = {}` to automatically pass options to a plugin's `setup()` function, forcing the plugin to be loaded.
   --
-  { 'github/copilot.vim' },
   {
     'nomnivore/ollama.nvim',
     dependencies = {
